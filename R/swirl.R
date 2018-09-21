@@ -291,8 +291,6 @@ resume.default <- function(e, ...){
       esc_flag <- FALSE
       return(TRUE)
     }    
-  }
-  
 
   
   # If the user want to return to the main menu, do the bookkeeping
