@@ -279,69 +279,21 @@ resume.default <- function(e, ...){
   
   # If the user wants to skip the current question, do the bookkeeping.
   if(uses_func("skip")(e$expr)[[1]]){
-    # Increment a skip count kept in e.
-    if(!exists("skips", e)) e$skips <- 0
-    e$skips <- 1 + e$skips
-    e$skipped <- TRUE
-    # Enter the correct answer for the user
-    # by simulating what the user should have done
-    correctAns <- e$current.row[,"CorrectAnswer"]
-    
-    # If we are on a script question, the correct answer should
-    # simply source the correct script
-    if(is(e$current.row, "script") && is.na(correctAns)) {
-      correct_script_path <- e$correct_script_temp_path
-      if(file.exists(correct_script_path)) {
-        # Get contents of the correct script
-        e$script_contents <- readLines(correct_script_path, warn = FALSE)
-        # Save expr to e
-        e$expr <- try(parse(text = e$script_contents), silent = TRUE)
-        # Source the correct script
-        try(source(correct_script_path))
-        # Inform the user and open the correct script
-        swirl_out(s()%N%"I just sourced the following script, which demonstrates one possible solution.",
-                  skip_after=TRUE)
-        file.edit(correct_script_path)
-        readline(s()%N%"Press Enter when you are ready to continue...")
-      }
-      
-    # If this is not a script question...
-    } else {
-      # In case correctAns refers to newVar, add it
-      # to the official list AND the global environment
-      if(exists("newVarName",e)) {
-        correctAns <- gsub("newVar", e$newVarName, correctAns)
-      }
-      e$expr <- parse(text=correctAns)[[1]]
-      ce <- cleanEnv(e$snapshot)
-      # evaluate e$expr keeping value and visibility information
-      # store the result in temporary object evaluation in order
-      # to avoid double potentially time consuming eval call
-      evaluation <- withVisible(eval(e$expr, ce))
-      e$vis <- evaluation$visible
-      e$val <- suppressMessages(suppressWarnings(evaluation$value))
-      xfer(ce, globalenv())
-      ce <- as.list(ce)
-      
-      # Inform the user and expose the correct answer
-      swirl_out(s()%N%"Entering the following correct answer for you...",
-                skip_after=TRUE)
-      message("> ", e$current.row[, "CorrectAnswer"])
-
-      if(e$vis & !is.null(e$val)) {
-        print(e$val)
-      }
-    }
+    swirl_out(s()%N%"Skipping is disabled please complete all questions to get credit for this module.",
+              skip_after=TRUE)
     
     # Make sure playing flag is off since user skipped
     e$playing <- FALSE
     
-  # If the user is not trying to skip and is playing, 
-  # ignore console input, but remain in operation.
-  } else if(exists("playing", envir=e, inherits=FALSE) && e$playing) {
-    esc_flag <- FALSE
-    return(TRUE)
-  }    
+    # If the user is not trying to skip and is playing, 
+    # ignore console input, but remain in operation.
+    } else if(exists("playing", envir=e, inherits=FALSE) && e$playing) {
+      esc_flag <- FALSE
+      return(TRUE)
+    }    
+  }
+  
+
   
   # If the user want to return to the main menu, do the bookkeeping
   if(uses_func("main")(e$expr)[[1]]){
